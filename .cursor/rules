@@ -1,0 +1,30 @@
+# Cursor Rules for PokemonBattleBrawl API
+
+## Code Language and Style
+
+- **Always write code in English**: variables, functions, classes, documentation, comments
+- **Minimal comments**: Only add comments when absolutely necessary to explain complex logic or business rules
+- **No code documentation**: Avoid documenting obvious code functionality
+- **Self-documenting code**: Use descriptive names that explain the purpose
+
+## Application Context
+
+This is a **NestJS API** for **PokemonBattleBrawl (PBB)** - a Pokemon battle system with the following features:
+
+### Code Standards
+
+- Use **PascalCase** for classes and interfaces
+- Use **camelCase** for variables and functions
+- Use **UPPER_SNAKE_CASE** for constants
+- Prefer **composition over inheritance**
+- Use **dependency injection** for services
+- Follow **SOLID principles**
+
+### Development Guidelines
+
+- Always use TypeScript strict mode
+- Prefer async/await over Promises
+- Use proper error handling with NestJS exceptions
+- Follow the existing code patterns in the project
+- Keep controllers thin, business logic in services
+- Use DTOs for request/response validation
