@@ -47,15 +47,21 @@ export class AuthService {
       password,
     });
 
-    // Use invitation code with actual user ID
-    await this.invitationsService.useInvitationCode(
-      invitationCode,
-      String(user._id),
-      username,
-    );
+    try {
+      // Send activation email first
+      await this.activationService.sendActivationEmail(user);
 
-    // Send activation email
-    await this.activationService.sendActivationEmail(user);
+      // Only mark invitation as used after email succeeds
+      await this.invitationsService.useInvitationCode(
+        invitationCode,
+        String(user._id),
+        username,
+      );
+    } catch (err) {
+      // Rollback: ensure invitation remains valid and user is not created
+      await this.usersService.remove(String(user._id));
+      throw err;
+    }
 
     const payload: JwtPayload = {
       sub: String(user._id),
