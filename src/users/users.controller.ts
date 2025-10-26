@@ -241,17 +241,32 @@ export class UsersController {
       },
     },
   })
-  @ApiResponse({ status: 200, description: 'Account deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Account deleted successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Account deleted successfully' },
+        deleted: { type: 'boolean', example: true },
+      },
+    },
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Password is incorrect' })
-  deleteAccount(
+  async deleteAccount(
     @Req() req: RequestWithUser,
     @Body() deleteAccountDto: DeleteAccountDto,
   ) {
-    return this.usersService.deleteAccount(
+    const deleted = await this.usersService.deleteAccount(
       String(req.user._id),
       deleteAccountDto,
     );
+
+    return {
+      message: 'Account deleted successfully',
+      deleted,
+    };
   }
 
   @UseGuards(JwtAuthGuard, ActiveUserGuard)

@@ -34,8 +34,8 @@ export class AdminController {
     description: `
     **Permission Rules:**
     - **ROOT**: Can modify any user, cannot be modified by anyone
-    - **ADMIN**: Can modify users (username, email) but CANNOT change roles
-    - **USER**: Cannot modify other users
+    - **ADMIN**: Can modify users with USER role but CANNOT change roles
+    - **USER**: Cannot modify any users (only their own profile)
     
     **Fields that can be modified:**
     - username
