@@ -7,12 +7,14 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ActivationModule } from '../activation/activation.module';
+import { InvitationsModule } from '../invitations/invitations.module';
 import { ActiveUserGuard } from './guards/active-user.guard';
 
 @Module({
   imports: [
     UsersModule,
     forwardRef(() => ActivationModule),
+    InvitationsModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

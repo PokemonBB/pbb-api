@@ -10,6 +10,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { ActivationService } from '../activation/activation.service';
+import { InvitationsService } from '../invitations/invitations.service';
 
 @Injectable()
 export class AuthService {
@@ -17,10 +18,11 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private activationService: ActivationService,
+    private invitationsService: InvitationsService,
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const { username, email, password } = registerDto;
+    const { username, email, password, invitationCode } = registerDto;
 
     const existingUser = await this.usersService.findByUsername(username);
     if (existingUser) {
@@ -32,11 +34,25 @@ export class AuthService {
       throw new ConflictException('Email already exists');
     }
 
+    // Validate invitation code first (without using it)
+    const invitation =
+      await this.invitationsService.validateInvitationCode(invitationCode);
+    if (!invitation) {
+      throw new ConflictException('Invalid or expired invitation code');
+    }
+
     const user: UserDocument = await this.usersService.create({
       username,
       email,
       password,
     });
+
+    // Use invitation code with actual user ID
+    await this.invitationsService.useInvitationCode(
+      invitationCode,
+      String(user._id),
+      username,
+    );
 
     // Send activation email
     await this.activationService.sendActivationEmail(user);

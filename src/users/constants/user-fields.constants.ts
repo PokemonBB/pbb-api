@@ -1,6 +1,6 @@
 export const USER_FIELD_SELECTORS = {
   ADMIN: '-password',
-  USER: '-password -active -email -__v -createdAt -updatedAt',
+  USER: '-password -active -email -canInvite -__v -createdAt -updatedAt',
 } as const;
 
 export const USER_FILTERS = {

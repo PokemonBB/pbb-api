@@ -54,21 +54,31 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @ApiOperation({ summary: 'Register new user' })
+  @ApiOperation({
+    summary: 'Register new user with invitation code',
+    description:
+      'Register a new user. Requires a valid invitation code to complete registration.',
+  })
   @ApiBody({
     type: RegisterDto,
     examples: {
       example1: {
-        summary: 'User registration example',
+        summary: 'User registration with invitation code',
         value: {
           username: 'johndoe',
           email: 'john@example.com',
           password: 'SecurePassword123!',
+          invitationCode:
+            'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6',
         },
       },
     },
   })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired invitation code',
+  })
   @ApiResponse({ status: 409, description: 'Username or email already exists' })
   async register(@Body() registerDto: RegisterDto, @Res() res: FastifyReply) {
     const result = await this.authService.register(registerDto);

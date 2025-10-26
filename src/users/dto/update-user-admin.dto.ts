@@ -25,4 +25,8 @@ export class UpdateUserAdminDto {
   @IsOptional()
   @IsBoolean()
   active?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  canInvite?: boolean;
 }

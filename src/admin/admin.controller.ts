@@ -42,6 +42,7 @@ export class AdminController {
     - email  
     - role (ROOT users only)
     - active (activate/deactivate user)
+    - canInvite (grant/revoke invitation permissions)
     
     **Fields that CANNOT be modified:**
     - password (use dedicated password change endpoint)
@@ -87,6 +88,18 @@ export class AdminController {
         value: {
           username: 'newusername',
           email: 'newemail@example.com',
+        },
+      },
+      example6: {
+        summary: 'Grant invitation permissions',
+        value: {
+          canInvite: true,
+        },
+      },
+      example7: {
+        summary: 'Revoke invitation permissions',
+        value: {
+          canInvite: false,
         },
       },
     },

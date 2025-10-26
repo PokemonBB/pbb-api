@@ -37,6 +37,12 @@ export class User {
   })
   active: boolean;
 
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  canInvite: boolean;
+
   @Prop({ type: UserConfiguration })
   configuration?: UserConfiguration;
 }

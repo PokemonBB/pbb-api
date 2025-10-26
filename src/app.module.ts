@@ -9,6 +9,7 @@ import { EmailModule } from './email/email.module';
 import { ActivationModule } from './activation/activation.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
 import { FriendsModule } from './friends/friends.module';
+import { InvitationsModule } from './invitations/invitations.module';
 import { HealthcheckModule } from './healthcheck/healthcheck.module';
 import { AuditModule } from './audit/audit.module';
 import { SeedHook } from './seed/seed.hook';
@@ -35,6 +36,7 @@ import databaseConfig from './config/database.config';
     ActivationModule,
     PasswordResetModule,
     FriendsModule,
+    InvitationsModule,
     HealthcheckModule,
     AuditModule,
   ],

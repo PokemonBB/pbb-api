@@ -44,6 +44,7 @@ async function bootstrap() {
     .addTag('Admin', 'Admin management endpoints')
     .addTag('Users', 'User management endpoints')
     .addTag('Friends', 'Friends management endpoints')
+    .addTag('Invitations', 'Invitation management endpoints')
     .addTag('Activation', 'Activation management endpoints')
     .addTag('Email', 'Email management endpoints')
     .addTag('Health', 'Healthcheck endpoints')
