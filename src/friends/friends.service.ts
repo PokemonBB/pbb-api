@@ -12,6 +12,7 @@ import { Friendship, FriendshipDocument } from '../schemas/friendship.schema';
 import { User, UserDocument } from '../schemas/user.schema';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/interfaces/paginated-response.interface';
+import { USER_FIELD_SELECTORS } from '../users/constants/user-fields.constants';
 
 @Injectable()
 export class FriendsService {
@@ -131,9 +132,15 @@ export class FriendsService {
   async getFriends(
     userId: string,
     paginationDto: PaginationDto,
+    userRole: string = 'USER',
   ): Promise<PaginatedResponse<User>> {
     const { page = 1, limit = 10 } = paginationDto;
     const skip = (page - 1) * limit;
+
+    const fieldSelector =
+      userRole === 'ADMIN' || userRole === 'ROOT'
+        ? USER_FIELD_SELECTORS.ADMIN
+        : USER_FIELD_SELECTORS.USER;
 
     const [friendships, total] = await Promise.all([
       this.friendshipModel
@@ -141,8 +148,8 @@ export class FriendsService {
           status: 'accepted',
           $or: [{ requester: userId }, { receiver: userId }],
         })
-        .populate('requester', 'username email role active')
-        .populate('receiver', 'username email role active')
+        .populate('requester', fieldSelector)
+        .populate('receiver', fieldSelector)
         .skip(skip)
         .limit(limit)
         .exec(),
@@ -179,9 +186,15 @@ export class FriendsService {
   async getPendingRequests(
     userId: string,
     paginationDto: PaginationDto,
+    userRole: string = 'USER',
   ): Promise<PaginatedResponse<Friendship>> {
     const { page = 1, limit = 10 } = paginationDto;
     const skip = (page - 1) * limit;
+
+    const fieldSelector =
+      userRole === 'ADMIN' || userRole === 'ROOT'
+        ? USER_FIELD_SELECTORS.ADMIN
+        : USER_FIELD_SELECTORS.USER;
 
     const [data, total] = await Promise.all([
       this.friendshipModel
@@ -189,7 +202,7 @@ export class FriendsService {
           receiver: userId,
           status: 'pending',
         })
-        .populate('requester', 'username email role active')
+        .populate('requester', fieldSelector)
         .skip(skip)
         .limit(limit)
         .exec(),
@@ -217,9 +230,15 @@ export class FriendsService {
   async getSentRequests(
     userId: string,
     paginationDto: PaginationDto,
+    userRole: string = 'USER',
   ): Promise<PaginatedResponse<Friendship>> {
     const { page = 1, limit = 10 } = paginationDto;
     const skip = (page - 1) * limit;
+
+    const fieldSelector =
+      userRole === 'ADMIN' || userRole === 'ROOT'
+        ? USER_FIELD_SELECTORS.ADMIN
+        : USER_FIELD_SELECTORS.USER;
 
     const [data, total] = await Promise.all([
       this.friendshipModel
@@ -227,7 +246,7 @@ export class FriendsService {
           requester: userId,
           status: 'pending',
         })
-        .populate('receiver', 'username email role active')
+        .populate('receiver', fieldSelector)
         .skip(skip)
         .limit(limit)
         .exec(),

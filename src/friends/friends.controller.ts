@@ -168,7 +168,11 @@ export class FriendsController {
     @Req() req: RequestWithUser,
     @Query() paginationDto: PaginationDto,
   ) {
-    return this.friendsService.getFriends(req.user.id as string, paginationDto);
+    return this.friendsService.getFriends(
+      req.user.id as string,
+      paginationDto,
+      req.user.role,
+    );
   }
 
   @Get('requests')
