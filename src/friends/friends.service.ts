@@ -53,8 +53,6 @@ export class FriendsService {
         throw new ConflictException('Friend request already exists');
       } else if (existingRequest.status === 'accepted') {
         throw new ConflictException('Users are already friends');
-      } else {
-        throw new ConflictException('Previous request was declined');
       }
     }
 
@@ -148,10 +146,10 @@ export class FriendsService {
           status: 'accepted',
           $or: [{ requester: userId }, { receiver: userId }],
         })
-        .populate('requester', fieldSelector)
-        .populate('receiver', fieldSelector)
         .skip(skip)
         .limit(limit)
+        .populate('requester', fieldSelector)
+        .populate('receiver', fieldSelector)
         .exec(),
       this.friendshipModel.countDocuments({
         status: 'accepted',
@@ -162,7 +160,7 @@ export class FriendsService {
     // Extraer usuarios amigos (excluyendo al usuario actual)
     const friends = friendships.map((friendship) => {
       const friend =
-        friendship.requester.toString() === userId
+        friendship.requester._id.toString() === userId
           ? friendship.receiver
           : friendship.requester;
       return friend;
