@@ -12,6 +12,7 @@ import { FriendsModule } from './friends/friends.module';
 import { InvitationsModule } from './invitations/invitations.module';
 import { HealthcheckModule } from './healthcheck/healthcheck.module';
 import { AuditModule } from './audit/audit.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { SeedHook } from './seed/seed.hook';
 import databaseConfig from './config/database.config';
 
@@ -39,6 +40,7 @@ import databaseConfig from './config/database.config';
     InvitationsModule,
     HealthcheckModule,
     AuditModule,
+    NotificationsModule,
   ],
   providers: [SeedHook],
 })

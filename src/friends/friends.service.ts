@@ -13,6 +13,7 @@ import { User, UserDocument } from '../schemas/user.schema';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/interfaces/paginated-response.interface';
 import { USER_FIELD_SELECTORS } from '../users/constants/user-fields.constants';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class FriendsService {
@@ -23,6 +24,7 @@ export class FriendsService {
     private friendshipModel: Model<FriendshipDocument>,
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
+    private notificationsService: NotificationsService,
   ) {}
 
   async sendFriendRequest(
@@ -64,6 +66,13 @@ export class FriendsService {
     });
 
     const savedFriendship = await friendship.save();
+
+    await this.notificationsService.createNotificationForUser(
+      receiverId,
+      `You have a new friend request`,
+      'notification',
+    );
+
     this.logger.log(`Friend request sent from ${requesterId} to ${receiverId}`);
 
     return savedFriendship;
