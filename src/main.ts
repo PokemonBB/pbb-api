@@ -49,6 +49,7 @@ async function bootstrap() {
     .addTag('Email', 'Email management endpoints')
     .addTag('Health', 'Healthcheck endpoints')
     .addTag('Audit', 'Audit management endpoints')
+    .addTag('Docs', 'Documentation endpoints (ROOT/ADMIN only)')
     .addCookieAuth('token', {
       type: 'http',
       in: 'cookie',

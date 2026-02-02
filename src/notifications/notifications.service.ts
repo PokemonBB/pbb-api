@@ -13,6 +13,10 @@ import {
 import { User, UserDocument } from '../schemas/user.schema';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/interfaces/paginated-response.interface';
+import {
+  getPaginationParams,
+  createPaginatedResponse,
+} from '../common/helpers/pagination.helper';
 
 @Injectable()
 export class NotificationsService {
@@ -82,10 +86,9 @@ export class NotificationsService {
     userId: string,
     paginationDto: PaginationDto,
   ): Promise<PaginatedResponse<Notification>> {
-    const { page = 1, limit = 10 } = paginationDto;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPaginationParams(paginationDto);
 
-    const [notifications, total] = await Promise.all([
+    const [data, total] = await Promise.all([
       this.notificationModel
         .find({ receiver: userId })
         .sort({ createdAt: -1 })
@@ -95,19 +98,7 @@ export class NotificationsService {
       this.notificationModel.countDocuments({ receiver: userId }),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data: notifications,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
-    };
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   async deleteNotification(

@@ -17,6 +17,10 @@ import {
 } from './constants/user-fields.constants';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/interfaces/paginated-response.interface';
+import {
+  getPaginationParams,
+  createPaginatedResponse,
+} from '../common/helpers/pagination.helper';
 
 @Injectable()
 export class UsersService {
@@ -42,9 +46,7 @@ export class UsersService {
     paginationDto: PaginationDto,
     excludeUserId?: string,
   ): Promise<PaginatedResponse<User>> {
-    const { page = 1, limit = 10 } = paginationDto;
-    const skip = (page - 1) * limit;
-
+    const { page, limit, skip } = getPaginationParams(paginationDto);
     const filter = {
       ...USER_FILTERS.ALL_USERS,
       ...(excludeUserId && { _id: { $ne: excludeUserId } }),
@@ -60,19 +62,7 @@ export class UsersService {
       this.userModel.countDocuments(filter),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
-    };
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   async findAllForUser(excludeUserId?: string): Promise<User[]> {
@@ -204,10 +194,8 @@ export class UsersService {
     paginationDto: PaginationDto,
     excludeUserId?: string,
   ): Promise<PaginatedResponse<User>> {
-    const { page = 1, limit = 10 } = paginationDto;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPaginationParams(paginationDto);
     const searchRegex = new RegExp(query, 'i');
-
     const filter = {
       username: { $regex: searchRegex },
       ...USER_FILTERS.ALL_USERS,
@@ -224,19 +212,7 @@ export class UsersService {
       this.userModel.countDocuments(filter),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
-    };
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   async searchUsersForUser(

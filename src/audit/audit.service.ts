@@ -3,6 +3,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Audit, AuditDocument } from '../schemas/audit.schema';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import {
+  getPaginationParams,
+  createPaginatedResponse,
+} from '../common/helpers/pagination.helper';
 
 @Injectable()
 export class AuditService {
@@ -25,10 +29,9 @@ export class AuditService {
   }
 
   async findAllPaginated(paginationDto: PaginationDto) {
-    const { page = 1, limit = 10 } = paginationDto;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPaginationParams(paginationDto);
 
-    const [audits, total] = await Promise.all([
+    const [data, total] = await Promise.all([
       this.auditModel
         .find()
         .sort({ createdAt: -1 })
@@ -38,14 +41,6 @@ export class AuditService {
       this.auditModel.countDocuments().exec(),
     ]);
 
-    return {
-      audits,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    };
+    return createPaginatedResponse(data, total, page, limit);
   }
 }

@@ -28,3 +28,10 @@ This is a **NestJS API** for **PokemonBattleBrawl (PBB)** - a Pokemon battle gam
 - Follow the existing code patterns in the project
 - Keep controllers thin, business logic in services
 - Use DTOs for request/response validation
+
+## Documentation System
+
+To quickly understand the documentation system if required, review:
+
+- **docs/README.md** – Main index, structure, two types of docs
+- **docs/api-docs/TWO_TYPES.md** – Conceptual docs vs Swagger

@@ -12,6 +12,10 @@ import { Friendship, FriendshipDocument } from '../schemas/friendship.schema';
 import { User, UserDocument } from '../schemas/user.schema';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { PaginatedResponse } from '../common/interfaces/paginated-response.interface';
+import {
+  getPaginationParams,
+  createPaginatedResponse,
+} from '../common/helpers/pagination.helper';
 import { USER_FIELD_SELECTORS } from '../users/constants/user-fields.constants';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -141,9 +145,7 @@ export class FriendsService {
     paginationDto: PaginationDto,
     userRole: string = 'USER',
   ): Promise<PaginatedResponse<User>> {
-    const { page = 1, limit = 10 } = paginationDto;
-    const skip = (page - 1) * limit;
-
+    const { page, limit, skip } = getPaginationParams(paginationDto);
     const fieldSelector =
       userRole === 'ADMIN' || userRole === 'ROOT'
         ? USER_FIELD_SELECTORS.ADMIN
@@ -166,7 +168,6 @@ export class FriendsService {
       }),
     ]);
 
-    // Extraer usuarios amigos (excluyendo al usuario actual)
     const friends = friendships.map((friendship) => {
       const friend =
         friendship.requester._id.toString() === userId
@@ -175,19 +176,12 @@ export class FriendsService {
       return friend;
     });
 
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data: friends as unknown as User[],
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
-    };
+    return createPaginatedResponse(
+      friends as unknown as User[],
+      total,
+      page,
+      limit,
+    );
   }
 
   async getPendingRequests(
@@ -195,9 +189,7 @@ export class FriendsService {
     paginationDto: PaginationDto,
     userRole: string = 'USER',
   ): Promise<PaginatedResponse<Friendship>> {
-    const { page = 1, limit = 10 } = paginationDto;
-    const skip = (page - 1) * limit;
-
+    const { page, limit, skip } = getPaginationParams(paginationDto);
     const fieldSelector =
       userRole === 'ADMIN' || userRole === 'ROOT'
         ? USER_FIELD_SELECTORS.ADMIN
@@ -219,19 +211,7 @@ export class FriendsService {
       }),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
-    };
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   async getSentRequests(
@@ -239,9 +219,7 @@ export class FriendsService {
     paginationDto: PaginationDto,
     userRole: string = 'USER',
   ): Promise<PaginatedResponse<Friendship>> {
-    const { page = 1, limit = 10 } = paginationDto;
-    const skip = (page - 1) * limit;
-
+    const { page, limit, skip } = getPaginationParams(paginationDto);
     const fieldSelector =
       userRole === 'ADMIN' || userRole === 'ROOT'
         ? USER_FIELD_SELECTORS.ADMIN
@@ -263,19 +241,7 @@ export class FriendsService {
       }),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-      data,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1,
-      },
-    };
+    return createPaginatedResponse(data, total, page, limit);
   }
 
   async removeFriend(friendId: string, userId: string): Promise<void> {
