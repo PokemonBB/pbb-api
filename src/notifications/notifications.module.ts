@@ -7,9 +7,11 @@ import {
   NotificationSchema,
 } from '../schemas/notification.schema';
 import { User, UserSchema } from '../schemas/user.schema';
+import { ConnectionsModule } from '../connections/connections.module';
 
 @Module({
   imports: [
+    ConnectionsModule,
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },
       { name: User.name, schema: UserSchema },

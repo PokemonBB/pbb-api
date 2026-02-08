@@ -3,6 +3,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import { SocketIoAdapter } from './connections/socket-io.adapter';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import fastifyCookie from '@fastify/cookie';
@@ -61,6 +62,13 @@ async function bootstrap() {
   SwaggerModule.setup('swagger', app, document);
   SwaggerModule.setup('docs', app, document);
   SwaggerModule.setup('api', app, document);
+
+  app.useWebSocketAdapter(
+    new SocketIoAdapter(app, {
+      corsOrigins,
+      credentials: true,
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3000, process.env.HOST || '0.0.0.0');
 }

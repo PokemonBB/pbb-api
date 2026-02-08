@@ -12,6 +12,7 @@ All the technical documentation of the api is available at:
 
 - [**SERVICES** - Services and Monorepo](/docs/services)
 - [**COMMON** - Common systems](/docs/common)
+- [**CONNECTIONS** - Real-time connections architecture](/docs/connections)
 - [**USERS** - Users system](/docs/users)
 - [**AUTH** - Authentication and session](/docs/auth)
 - [**EMAIL** - Email system and configuration](/docs/email)
@@ -26,5 +27,3 @@ All the technical documentation of the api is available at:
 - **Conceptual (this one):** Concepts, systems, flows. Stored in `/docs`, served via Docs API. See [Two Types](/docs/api-docs/TWO_TYPES).
 - **Swagger:** Technical API reference. Requests, responses, examples. Available at [API Swagger]({API_BASE_URL}/docs).
 
-# DOCS TO-DO LIST:  
-- Connections: socket.io, geckos.io, all their events and what each one is used for

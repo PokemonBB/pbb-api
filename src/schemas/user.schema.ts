@@ -48,3 +48,18 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.pre('save', function (next) {
+  if (this.role === UserRole.ROOT || this.role === UserRole.ADMIN) {
+    this.canInvite = true;
+  }
+  next();
+});
+
+UserSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate() as { role?: UserRole };
+  if (update?.role === UserRole.ROOT || update?.role === UserRole.ADMIN) {
+    (this.getUpdate() as Record<string, unknown>).canInvite = true;
+  }
+  next();
+});
