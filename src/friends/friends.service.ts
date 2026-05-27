@@ -18,6 +18,7 @@ import {
 } from '../common/helpers/pagination.helper';
 import { USER_FIELD_SELECTORS } from '../users/constants/user-fields.constants';
 import { NotificationsService } from '../notifications/notifications.service';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class FriendsService {
@@ -29,6 +30,7 @@ export class FriendsService {
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
     private notificationsService: NotificationsService,
+    private auditService: AuditService,
   ) {}
 
   async sendFriendRequest(
@@ -75,7 +77,26 @@ export class FriendsService {
       receiverId,
       `You have a new friend request`,
       'notification',
+      'FRIEND_REQUEST_RECEIVED',
     );
+
+    const requester = await this.userModel
+      .findById(requesterId)
+      .select('username')
+      .lean()
+      .exec();
+    await this.auditService.createAuditLog({
+      userId: requesterId,
+      username: requester?.username ?? requesterId,
+      action: 'CREATE',
+      resource: 'FRIENDSHIP',
+      resourceId: String((savedFriendship as unknown as { _id: unknown })._id),
+      newValues: {
+        requesterId,
+        receiverId,
+        status: 'pending',
+      },
+    });
 
     this.logger.log(`Friend request sent from ${requesterId} to ${receiverId}`);
 
@@ -102,10 +123,24 @@ export class FriendsService {
       throw new BadRequestException('Friend request is not pending');
     }
 
-    // Actualizar estado
     friendship.status = 'accepted';
     friendship.respondedAt = new Date();
     await friendship.save();
+
+    const actor = await this.userModel
+      .findById(userId)
+      .select('username')
+      .lean()
+      .exec();
+    await this.auditService.createAuditLog({
+      userId,
+      username: actor?.username ?? userId,
+      action: 'UPDATE',
+      resource: 'FRIENDSHIP',
+      resourceId: requestId,
+      oldValues: { status: 'pending' },
+      newValues: { status: 'accepted' },
+    });
 
     this.logger.log(`Friend request ${requestId} accepted by ${userId}`);
     return friendship;
@@ -131,10 +166,24 @@ export class FriendsService {
       throw new BadRequestException('Friend request is not pending');
     }
 
-    // Actualizar estado
     friendship.status = 'declined';
     friendship.respondedAt = new Date();
     await friendship.save();
+
+    const actor = await this.userModel
+      .findById(userId)
+      .select('username')
+      .lean()
+      .exec();
+    await this.auditService.createAuditLog({
+      userId,
+      username: actor?.username ?? userId,
+      action: 'UPDATE',
+      resource: 'FRIENDSHIP',
+      resourceId: requestId,
+      oldValues: { status: 'pending' },
+      newValues: { status: 'declined' },
+    });
 
     this.logger.log(`Friend request ${requestId} declined by ${userId}`);
     return friendship;
@@ -256,6 +305,25 @@ export class FriendsService {
     if (!friendship) {
       throw new NotFoundException('Friendship not found');
     }
+
+    const actor = await this.userModel
+      .findById(userId)
+      .select('username')
+      .lean()
+      .exec();
+    await this.auditService.createAuditLog({
+      userId,
+      username: actor?.username ?? userId,
+      action: 'DELETE',
+      resource: 'FRIENDSHIP',
+      resourceId: String(friendship._id),
+      oldValues: {
+        requester: friendship.requester.toString(),
+        receiver: friendship.receiver.toString(),
+        status: 'accepted',
+      },
+      newValues: { deleted: true },
+    });
 
     await this.friendshipModel.findByIdAndDelete(friendship._id);
     this.logger.log(`Friendship removed between ${userId} and ${friendId}`);

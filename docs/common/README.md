@@ -9,4 +9,5 @@ These are cross-cutting concerns used across the application.
 - [**HEALTHCHECK** - API and database health endpoints](/docs/common/HEALTHCHECK)
 - [**CI_CD** - Docker build and publish via GitHub Actions](/docs/common/CI_CD)
 - [**SEED** - Database seed: purpose, location, mappings, idempotence](/docs/common/SEED)
+- [**EXPORT** - Export collections as JSON (ROOT only)](/docs/common/EXPORT)
 - [**MIGRATIONS** - No migration files; schema-driven structure via Mongoose](/docs/common/MIGRATIONS)

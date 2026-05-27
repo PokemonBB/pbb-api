@@ -43,5 +43,7 @@ Paginated responses include a `data` array and a `pagination` object:
 - GET /api/friends/sent
 - GET /api/notifications
 - GET /api/audit
+- GET /api/pokemon/pokemons
+- GET /api/pokemon/pokemons/search
 
 For request/response schemas, see [Swagger]({API_BASE_URL}/api#/Users).

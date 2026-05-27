@@ -3,6 +3,7 @@
 /node_modules
 /build
 /seed
+/seed-common
 
 # Logs
 logs
@@ -51,6 +52,7 @@ lerna-debug.log*
 pids
 *.pid
 *.seed
+*.seed-common
 *.pid.lock
 
 # Diagnostic reports (https://nodejs.org/api/report.html)

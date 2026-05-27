@@ -22,7 +22,7 @@ export class EmailController {
   constructor(private readonly emailService: EmailService) {}
 
   @Post('test-connection')
-  @ApiOperation({ summary: 'Test email connection (Admin/Root only)' })
+  @ApiOperation({ summary: 'Test email connection (ADMIN/ROOT)' })
   @ApiCookieAuth('token')
   @ApiResponse({ status: 200, description: 'Email connection test result' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -38,7 +38,7 @@ export class EmailController {
   }
 
   @Post('send-welcome')
-  @ApiOperation({ summary: 'Send welcome email (Admin/Root only)' })
+  @ApiOperation({ summary: 'Send welcome email (ADMIN/ROOT)' })
   @ApiCookieAuth('token')
   @ApiBody({
     type: 'object',
@@ -66,7 +66,7 @@ export class EmailController {
   }
 
   @Post('send-password-reset')
-  @ApiOperation({ summary: 'Send password reset email (Admin/Root only)' })
+  @ApiOperation({ summary: 'Send password reset email (ADMIN/ROOT)' })
   @ApiCookieAuth('token')
   @ApiBody({
     type: 'object',
@@ -98,7 +98,7 @@ export class EmailController {
   }
 
   @Post('send-account-activation')
-  @ApiOperation({ summary: 'Send account activation email (Admin/Root only)' })
+  @ApiOperation({ summary: 'Send account activation email (ADMIN/ROOT)' })
   @ApiCookieAuth('token')
   @ApiBody({
     type: 'object',
@@ -131,7 +131,7 @@ export class EmailController {
 
   @Post('send-account-deactivation')
   @ApiOperation({
-    summary: 'Send account deactivation email (Admin/Root only)',
+    summary: 'Send account deactivation email (ADMIN/ROOT)',
   })
   @ApiCookieAuth('token')
   @ApiBody({

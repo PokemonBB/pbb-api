@@ -43,6 +43,7 @@ export class NotificationsService {
       | 'warning'
       | 'error'
       | 'success' = 'notification',
+    action?: string,
   ): Promise<Notification> {
     const user = await this.userModel.findById(receiverId);
     if (!user) {
@@ -53,6 +54,7 @@ export class NotificationsService {
       message,
       type,
       receiver: receiverId,
+      ...(action && { action }),
     });
 
     const savedNotification = await notification.save();
@@ -63,6 +65,7 @@ export class NotificationsService {
         _id: Types.ObjectId;
         message: string;
         type: string;
+        action?: string;
         createdAt?: Date;
       },
     );
@@ -77,6 +80,7 @@ export class NotificationsService {
       | 'warning'
       | 'error'
       | 'success' = 'notification',
+    action?: string,
   ): Promise<Notification[]> {
     const users = await this.userModel.find({});
 
@@ -84,6 +88,7 @@ export class NotificationsService {
       message,
       type,
       receiver: user._id,
+      ...(action && { action }),
     }));
 
     const savedNotifications =
@@ -96,6 +101,7 @@ export class NotificationsService {
       _id: Types.ObjectId;
       message: string;
       type: string;
+      action?: string;
       createdAt?: Date;
     }>;
     for (const n of withReceiver) {
@@ -143,12 +149,25 @@ export class NotificationsService {
     this.logger.log(`Notification ${notificationId} deleted by user ${userId}`);
   }
 
+  async deleteAllUserNotifications(
+    userId: string,
+  ): Promise<{ deletedCount: number }> {
+    const result = await this.notificationModel.deleteMany({
+      receiver: userId,
+    });
+    this.logger.log(
+      `All notifications deleted for user ${userId} (count: ${result.deletedCount})`,
+    );
+    return { deletedCount: result.deletedCount };
+  }
+
   private emitNotificationEvent(
     receiverId: string,
     notification: {
       _id: Types.ObjectId;
       message: string;
       type: string;
+      action?: string;
       createdAt?: Date;
     },
   ): void {
@@ -156,6 +175,7 @@ export class NotificationsService {
       id: notification._id.toString(),
       message: notification.message,
       type: notification.type,
+      ...(notification.action && { action: notification.action }),
       createdAt: notification.createdAt ?? new Date(),
     };
     this.socketEmitter.emitToUser(receiverId, NOTIFICATION, payload);

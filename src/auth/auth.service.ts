@@ -11,6 +11,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { ActivationService } from '../activation/activation.service';
 import { InvitationsService } from '../invitations/invitations.service';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
     private jwtService: JwtService,
     private activationService: ActivationService,
     private invitationsService: InvitationsService,
+    private auditService: AuditService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -63,6 +65,15 @@ export class AuthService {
       throw err;
     }
 
+    await this.auditService.createAuditLog({
+      userId: String(user._id),
+      username: user.username,
+      action: 'REGISTER',
+      resource: 'USER',
+      resourceId: String(user._id),
+      newValues: { username: user.username, email: user.email },
+    });
+
     const payload: JwtPayload = {
       sub: String(user._id),
       username: user.username,
@@ -88,7 +99,6 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const { username, password } = loginDto;
 
-    // Try to find user by username first, then by email
     let user = await this.usersService.findByUsername(username);
     if (!user) {
       user = (await this.usersService.findByEmail(
@@ -97,6 +107,14 @@ export class AuthService {
     }
 
     if (!user) {
+      await this.auditService.createAuditLog({
+        userId: 'anonymous',
+        username: username || 'unknown',
+        action: 'LOGIN_FAILURE',
+        resource: 'AUTH',
+        resourceId: username || 'unknown',
+        newValues: { reason: 'user_not_found' },
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -105,10 +123,26 @@ export class AuthService {
       user.password,
     );
     if (!isPasswordValid) {
+      await this.auditService.createAuditLog({
+        userId: 'anonymous',
+        username: username || 'unknown',
+        action: 'LOGIN_FAILURE',
+        resource: 'AUTH',
+        resourceId: String(user._id),
+        newValues: { reason: 'invalid_password' },
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
     if (!user.active) {
+      await this.auditService.createAuditLog({
+        userId: 'anonymous',
+        username: username || 'unknown',
+        action: 'LOGIN_FAILURE',
+        resource: 'AUTH',
+        resourceId: String(user._id),
+        newValues: { reason: 'account_not_activated' },
+      });
       throw new UnauthorizedException(
         'Account is not activated. Please check your email and activate your account.',
       );

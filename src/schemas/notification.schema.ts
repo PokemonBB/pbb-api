@@ -15,6 +15,9 @@ export class Notification {
   })
   type: string;
 
+  @Prop({ type: String, default: undefined })
+  action?: string;
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   receiver: Types.ObjectId;
 }

@@ -8,6 +8,7 @@ import { UsersModule } from '../users/users.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ActivationModule } from '../activation/activation.module';
 import { InvitationsModule } from '../invitations/invitations.module';
+import { AuditModule } from '../audit/audit.module';
 import { ActiveUserGuard } from './guards/active-user.guard';
 
 @Module({
@@ -15,6 +16,7 @@ import { ActiveUserGuard } from './guards/active-user.guard';
     UsersModule,
     forwardRef(() => ActivationModule),
     InvitationsModule,
+    AuditModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

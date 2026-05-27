@@ -30,7 +30,7 @@ export class AdminController {
   @UseInterceptors(AuditInterceptor)
   @Patch(':id')
   @ApiOperation({
-    summary: 'Update user (Admin/Root only)',
+    summary: 'Update user (ADMIN/ROOT)',
     description: `
     **Permission Rules:**
     - **ROOT**: Can modify any user, cannot be modified by anyone
@@ -115,7 +115,7 @@ export class AdminController {
   @UseInterceptors(AuditInterceptor)
   @Delete(':id')
   @ApiOperation({
-    summary: 'Delete user (Admin/Root only)',
+    summary: 'Delete user (ADMIN/ROOT)',
     description: `
     **Permission Rules:**
     - **ROOT**: Can delete any user

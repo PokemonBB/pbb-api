@@ -51,9 +51,25 @@ Only one room per user is used for all user-scoped events. Multiple tabs or devi
   - `id`: string (notification document id)
   - `message`: string
   - `type`: string (`'notification' | 'info' | 'warning' | 'error' | 'success'`)
-  - `createdAt`: Date
+  - `action`: string | undefined (optional, identifies what the notification represents so the client can attach click behavior; see **5.2**)
+  - `createdAt`: string (ISO 8601)
 
 The frontend can listen for this event to show toasts, update the notification list, or refresh unread state without polling.
+
+### 5.2 Notification Actions
+
+The optional `action` field gives the client enough context to make a notification **clickable** and route the user to the right place when clicked. The server assigns the action; the client maps it to a handler.
+
+| Action | Set by | Client behavior |
+| :--- | :--- | :--- |
+| `FRIEND_REQUEST_RECEIVED` | FriendsService (on friend request sent) | Opens the friends panel on the "received" tab |
+
+Notifications without an `action` are informational and not clickable.
+
+**Adding a new action:**
+1. Define the action string constant (e.g. `'FRIEND_REQUEST_ACCEPTED'`).
+2. Pass it as the `action` parameter in the service that calls `createNotificationForUser` or `createNotificationForAllUsers`.
+3. In the webapp, add an entry to the `ACTION_HANDLERS` map in `socket.service.ts` mapping the action to the desired callback.
 
 ---
 

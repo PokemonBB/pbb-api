@@ -8,23 +8,24 @@ All notification endpoints require an [authenticated](/docs/auth) and [active](/
 
 - **message**: Text content
 - **type**: `notification` | `info` | `warning` | `error` | `success` (default: `notification`)
+- **action**: Optional string that identifies what the notification represents (e.g. `FRIEND_REQUEST_RECEIVED`). Used by the client to make the notification clickable and route to the appropriate view. See [Socket.io - Actions](/docs/connections/SOCKET_IO) for the list of actions and how to add new ones.
 - **receiver**: User who receives the notification (reference to User)
 
 Documents are stored in the **notifications** collection with timestamps. List queries are sorted by creation date (newest first).
 
 ## Who Creates Notifications
 
-**Automatically:** The [friends](/docs/friends) system creates a notification when a user sends a friend request: the receiver gets one notification with message “You have a new friend request” and type `notification`.
+**Automatically:** The [friends](/docs/friends) system creates a notification when a user sends a friend request: the receiver gets one notification with message "You have a new friend request", type `notification` and action `FRIEND_REQUEST_RECEIVED`.
 
-**Manually (ADMIN/ROOT only):** A [ROOT or ADMIN](/docs/users/ROLES) user can call the create-notification endpoint to send a message to a single user (by `receiverId`) or to all users (`sendToAll: true`). When sending to all, the API creates one notification document per user. Use cases: announcements, maintenance notices, or targeted messages (e.g. “Your friend request was accepted”).
+**Manually (ADMIN/ROOT only):** A [ROOT or ADMIN](/docs/users/ROLES) user can call the create-notification endpoint to send a message to a single user (by `receiverId`) or to all users (`sendToAll: true`). An optional `action` field can be included. When sending to all, the API creates one notification document per user. Use cases: announcements, maintenance notices, or targeted messages (e.g. "Your friend request was accepted").
 
 ## Scope
 
-Every notification has exactly one receiver. There is no “broadcast” document: “send to all” means one notification per user. Each user only sees and can delete their own notifications.
+Every notification has exactly one receiver. There is no "broadcast" document: "send to all" means one notification per user. Each user only sees and can delete their own notifications.
 
 ## List and Delete
 
-**List:** `GET /api/notifications` returns the current user’s notifications, paginated and ordered by newest first. Only the owner can see them.
+**List:** `GET /api/notifications` returns the current user's notifications, paginated and ordered by newest first. Only the owner can see them.
 
 **Delete:** `DELETE /api/notifications/:notificationId` removes a single notification. Allowed only if the authenticated user is the receiver; otherwise the API returns 403.
 

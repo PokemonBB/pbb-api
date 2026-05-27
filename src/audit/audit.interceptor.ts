@@ -26,7 +26,7 @@ export class AuditInterceptor implements NestInterceptor {
     const method = request.method;
     const url = request.url;
     const body = request.body;
-    const params = request.params;
+    const params = request.params as Record<string, string>;
 
     if (!user) {
       return next.handle();
@@ -34,8 +34,8 @@ export class AuditInterceptor implements NestInterceptor {
 
     // Get previous data for UPDATE operations
     let oldData: Record<string, any> | null = null;
-    if (method === 'PATCH' || method === 'PUT') {
-      oldData = await this.getOldDataFromDatabase((params as any).id);
+    if (method === 'PATCH' || method === 'PUT' || method === 'DELETE') {
+      oldData = await this.getOldDataFromDatabase(params.id);
     }
 
     return next.handle().pipe(
@@ -43,7 +43,7 @@ export class AuditInterceptor implements NestInterceptor {
         try {
           const action = this.getActionFromMethod(method);
           const resource = this.getResourceFromUrl(url);
-          const resourceId = (params as any).id || 'unknown';
+          const resourceId: string = params.id || 'unknown';
 
           const { oldValues, newValues } = this.getChangedValues(
             method,
@@ -90,15 +90,15 @@ export class AuditInterceptor implements NestInterceptor {
 
   private getResourceFromUrl(url: string): string {
     if (url.includes('/admin/users')) {
-      return 'user';
+      return 'USER';
     }
     if (url.includes('/friends')) {
-      return 'friendship';
+      return 'FRIENDSHIP';
     }
     if (url.includes('/auth')) {
-      return 'auth';
+      return 'AUTH';
     }
-    return 'unknown';
+    return 'UNKNOWN';
   }
 
   private async getOldDataFromDatabase(
@@ -112,6 +112,7 @@ export class AuditInterceptor implements NestInterceptor {
           email: user.email,
           role: user.role,
           active: user.active,
+          canInvite: user.canInvite,
         };
       }
       return null;

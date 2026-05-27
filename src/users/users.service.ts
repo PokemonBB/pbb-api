@@ -21,10 +21,14 @@ import {
   getPaginationParams,
   createPaginatedResponse,
 } from '../common/helpers/pagination.helper';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private readonly auditService: AuditService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -121,20 +125,54 @@ export class UsersService {
     id: string,
     updateUsernameDto: UpdateUsernameDto,
   ): Promise<User | null> {
-    return this.userModel
+    const previous = await this.userModel
+      .findById(id)
+      .select('username')
+      .lean()
+      .exec();
+    const updated = await this.userModel
       .findByIdAndUpdate(id, updateUsernameDto, { new: true })
       .select('-password')
       .exec();
+    if (updated && previous && previous.username !== updateUsernameDto.username) {
+      await this.auditService.createAuditLog({
+        userId: id,
+        username: previous.username,
+        action: 'UPDATE',
+        resource: 'USER',
+        resourceId: id,
+        oldValues: { username: previous.username },
+        newValues: { username: updateUsernameDto.username },
+      });
+    }
+    return updated;
   }
 
   async updateEmail(
     id: string,
     updateEmailDto: UpdateEmailDto,
   ): Promise<User | null> {
-    return this.userModel
+    const previous = await this.userModel
+      .findById(id)
+      .select('username email')
+      .lean()
+      .exec();
+    const updated = await this.userModel
       .findByIdAndUpdate(id, updateEmailDto, { new: true })
       .select('-password')
       .exec();
+    if (updated && previous && previous.email !== updateEmailDto.email) {
+      await this.auditService.createAuditLog({
+        userId: id,
+        username: previous.username,
+        action: 'UPDATE',
+        resource: 'USER',
+        resourceId: id,
+        oldValues: { email: previous.email },
+        newValues: { email: updateEmailDto.email },
+      });
+    }
+    return updated;
   }
 
   async updatePassword(
@@ -160,22 +198,45 @@ export class UsersService {
       10,
     );
 
-    return this.userModel
+    const updated = await this.userModel
       .findByIdAndUpdate(id, { password: hashedNewPassword }, { new: true })
       .select('-password')
       .exec();
+    if (updated) {
+      await this.auditService.createAuditLog({
+        userId: id,
+        username: user.username,
+        action: 'UPDATE',
+        resource: 'USER',
+        resourceId: id,
+        newValues: { passwordChanged: true },
+      });
+    }
+    return updated;
   }
 
   async updatePasswordDirect(
     id: string,
     newPassword: string,
   ): Promise<User | null> {
+    const user = await this.userModel.findById(id).select('username').exec();
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    return this.userModel
+    const updated = await this.userModel
       .findByIdAndUpdate(id, { password: hashedNewPassword }, { new: true })
       .select('-password')
       .exec();
+    if (updated && user) {
+      await this.auditService.createAuditLog({
+        userId: id,
+        username: user.username,
+        action: 'UPDATE',
+        resource: 'USER',
+        resourceId: id,
+        newValues: { passwordChanged: true },
+      });
+    }
+    return updated;
   }
 
   async searchUsers(query: string): Promise<User[]> {
@@ -247,6 +308,15 @@ export class UsersService {
       throw new BadRequestException('Password is incorrect');
     }
 
+    await this.auditService.createAuditLog({
+      userId: id,
+      username: user.username,
+      action: 'DELETE',
+      resource: 'USER',
+      resourceId: id,
+      oldValues: { username: user.username, email: user.email },
+      newValues: { deleted: true },
+    });
     await this.userModel.findByIdAndDelete(id).exec();
     return true;
   }

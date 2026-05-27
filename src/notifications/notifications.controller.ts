@@ -26,13 +26,17 @@ import { ActiveUserGuard } from '../auth/guards/active-user.guard';
 import type { RequestWithUser } from '../auth/interfaces/request-with-user.interface';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { UserRole } from '../enums/user-role.enum';
+import { AuditService } from '../audit/audit.service';
 
 @ApiTags('Notifications')
 @Controller('notifications')
 @UseGuards(JwtAuthGuard, ActiveUserGuard)
 @ApiCookieAuth('token')
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(
+    private readonly notificationsService: NotificationsService,
+    private readonly auditService: AuditService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -67,6 +71,38 @@ export class NotificationsController {
       req.user.id as string,
       paginationDto,
     );
+  }
+
+  @Delete()
+  @ApiOperation({
+    summary: 'Delete all user notifications',
+    description:
+      'Deletes all notifications for the authenticated user. Returns the number of deleted notifications.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'All notifications deleted successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'All notifications deleted successfully',
+        },
+        deletedCount: { type: 'number', example: 5 },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async deleteAllNotifications(@Req() req: RequestWithUser) {
+    const { deletedCount } =
+      await this.notificationsService.deleteAllUserNotifications(
+        req.user.id as string,
+      );
+    return {
+      message: 'All notifications deleted successfully',
+      deletedCount,
+    };
   }
 
   @Delete(':notificationId')
@@ -142,6 +178,7 @@ export class NotificationsController {
     createNotificationDto: {
       message: string;
       type?: 'notification' | 'info' | 'warning' | 'error' | 'success';
+      action?: string;
       receiverId?: string;
       sendToAll?: boolean;
     },
@@ -157,7 +194,21 @@ export class NotificationsController {
         await this.notificationsService.createNotificationForAllUsers(
           createNotificationDto.message,
           createNotificationDto.type || 'notification',
+          createNotificationDto.action,
         );
+
+      await this.auditService.createAuditLog({
+        userId: req.user.id as string,
+        username: req.user.username,
+        action: 'CREATE',
+        resource: 'NOTIFICATION',
+        resourceId: 'broadcast',
+        newValues: {
+          message: createNotificationDto.message,
+          type: createNotificationDto.type || 'notification',
+          recipientsCount: notifications.length,
+        },
+      });
 
       return {
         message: `Notification sent to ${notifications.length} users`,
@@ -175,7 +226,21 @@ export class NotificationsController {
           createNotificationDto.receiverId,
           createNotificationDto.message,
           createNotificationDto.type || 'notification',
+          createNotificationDto.action,
         );
+
+      await this.auditService.createAuditLog({
+        userId: req.user.id as string,
+        username: req.user.username,
+        action: 'CREATE',
+        resource: 'NOTIFICATION',
+        resourceId: String((notification as unknown as { _id: unknown })._id),
+        newValues: {
+          message: createNotificationDto.message,
+          type: createNotificationDto.type || 'notification',
+          receiverId: createNotificationDto.receiverId,
+        },
+      });
 
       return {
         message: 'Notification created successfully',

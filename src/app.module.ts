@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
-import { SeedModule } from './seed/seed.module';
 import { EmailModule } from './email/email.module';
 import { ActivationModule } from './activation/activation.module';
 import { PasswordResetModule } from './password-reset/password-reset.module';
@@ -15,6 +14,10 @@ import { AuditModule } from './audit/audit.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { DocsModule } from './docs/docs.module';
 import { ConnectionsModule } from './connections/connections.module';
+import { PokemonTypesModule } from './pokemon-types/pokemon-types.module';
+import { PokemonModule } from './pokemon/pokemon.module';
+import { MovesModule } from './moves/moves.module';
+import { DatabaseModule } from './database/database.module';
 import { SeedHook } from './seed/seed.hook';
 import databaseConfig from './config/database.config';
 
@@ -34,7 +37,7 @@ import databaseConfig from './config/database.config';
     UsersModule,
     AuthModule,
     AdminModule,
-    SeedModule,
+    DatabaseModule,
     EmailModule,
     ActivationModule,
     PasswordResetModule,
@@ -45,6 +48,9 @@ import databaseConfig from './config/database.config';
     NotificationsModule,
     DocsModule,
     ConnectionsModule,
+    PokemonTypesModule,
+    PokemonModule,
+    MovesModule,
   ],
   providers: [SeedHook],
 })

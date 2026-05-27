@@ -8,10 +8,12 @@ import {
 } from '../schemas/notification.schema';
 import { User, UserSchema } from '../schemas/user.schema';
 import { ConnectionsModule } from '../connections/connections.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
   imports: [
     ConnectionsModule,
+    AuditModule,
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },
       { name: User.name, schema: UserSchema },

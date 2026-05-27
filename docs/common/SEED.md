@@ -9,7 +9,33 @@ The seed system loads initial data into the database when the API starts. It run
 
 ## When It Runs
 
-A `SeedHook` implements `OnApplicationBootstrap`. When the API finishes starting, it calls `seedDatabase()`. There is no manual trigger or HTTP endpoint.
+**Automatic (bootstrap):** A `SeedHook` implements `OnApplicationBootstrap`. When the API finishes starting, it calls `seedDatabase()`. This only seeds empty collections.
+
+**Manual (API):** `POST /api/database/seed/reset` drops collections and re-seeds from the seed files. It is a destructive operation restricted to [ROOT](/docs/users/ROLES) users only. You can reset the entire database or only specific collections (see [Reset scope](#reset-scope-full-vs-specific-collections) below). The response returns `dropped` (collection names that were dropped) and `seeded` (collection names that were re-seeded). Useful for resetting local/dev environments or refreshing only part of the data.
+
+### Reset scope: full vs specific collections
+
+The request body is optional and follows the same pattern as [Export](/docs/common/EXPORT):
+
+| Body | Behaviour |
+|------|-----------|
+| Omitted or `{}` | **Full reset:** all collections in the database are dropped, then all seed files are applied. |
+| `{ "collections": [] }` | Same as full reset. |
+| `{ "collections": ["types", "moves"] }` | **Partial reset:** only the listed collections are dropped (if they exist). Then only those that have a corresponding seed file are re-seeded, in fixed order. |
+
+**Important:**
+
+- Only **existing** collections are dropped. If you pass a name that does not exist in the database, it is ignored (no error). The response `dropped` and `seeded` arrays reflect what was actually done.
+- **Seeding order** is enforced (e.g. `types` → `pokemons` → `moves`). When you request specific collections, only those with seed files are run, but still in this order. If you reset only `moves`, the seed for moves depends on `types` and `pokemons` already being present; do not reset only `moves` if you have just dropped `types` or `pokemons` without re-seeding them in the same request (include them in `collections` so they are dropped and re-seeded first).
+- Partial reset is useful to refresh a subset of data (e.g. only `types` and `moves`) without touching users, audits, or other collections.
+
+**Request body (optional):**
+
+| Field | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `collections` | string[] | no | Collection names to drop and re-seed. If omitted or empty, **all** collections are reset. |
+
+**Response:** `201` with `{ "message": "...", "dropped": string[], "seeded": string[] }`. `dropped` lists collections that were dropped; `seeded` lists collections that were re-seeded (only those that have a seed file and were either requested or implied by full reset).
 
 ## Location
 

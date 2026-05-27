@@ -51,6 +51,11 @@ async function bootstrap() {
     .addTag('Health', 'Healthcheck endpoints')
     .addTag('Audit', 'Audit management endpoints')
     .addTag('Docs', 'Documentation endpoints (ROOT/ADMIN only)')
+    .addTag('Pokemon', 'Pokémon game data endpoints')
+    .addTag(
+      'Database',
+      'Database operations: list collections, export, seed reset (ROOT only)',
+    )
     .addCookieAuth('token', {
       type: 'http',
       in: 'cookie',
